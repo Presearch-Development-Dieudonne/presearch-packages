@@ -5,18 +5,18 @@ import { IAsset } from './types';
 // @ts-ignore
 const fetch = require('node-fetch');
 
-const loadAssets = async (): Promise<Array<IAsset>> => {
+const loadAssets = async () => {
   const response = await fetch(`https://api.opensea.io/api/v1/assets?order_direction=desc&offset=0&limit=50`);
   const data = await response.text();
   const { assets } = JSON.parse(data);
   return assets;
 };
 
-async function OpenSea(query: string): Promise<string> {
+async function OpenSea(query) {
   const q = query.toLowerCase().split(' ');
   const assets = await loadAssets();
 
-  console.log(assets);
+  // console.log(assets);
 
   const firstAsset =
     assets &&
@@ -31,7 +31,7 @@ async function OpenSea(query: string): Promise<string> {
       );
     });
 
-  // console.log(firstAsset);
+  console.log(firstAsset);
 
   if (!firstAsset) {
     return `<div className="d-flex justify-center items-center">
@@ -117,13 +117,13 @@ async function OpenSea(query: string): Promise<string> {
   </div>`;
 }
 
-async function trigger(query: string): Promise<boolean> {
+async function trigger(query) {
   const assets = await loadAssets();
   const q = query.toLowerCase().split(' ');
   if (assets && assets.length && q.every((el) => 'NFT'.toLowerCase().indexOf(el) > -1)) {
     return true;
   }
-  return false;
+  return true;
 }
 
 module.exports = { OpenSea, trigger };
