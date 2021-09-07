@@ -9,7 +9,7 @@ const fetch = require('node-fetch');
 
 const loadAssets = async (query) => {
   const response = await fetch(
-    `https://api.opensea.io/api/v1/assets?format=json&owner=${query}&order_direction=desc&offset=0&limit=10`
+    `https://api.opensea.io/api/v1/assets?format=json&asset_contract_address=${query}&order_direction=desc&offset=0&limit=10`
   );
   const data = await response.json();
   const { assets } = data;
