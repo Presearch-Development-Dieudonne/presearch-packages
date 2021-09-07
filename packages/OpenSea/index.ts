@@ -5,33 +5,33 @@ import { IAsset } from './types';
 // @ts-ignore
 const fetch = require('node-fetch');
 
-const loadAssets = async (): Promise<Array<IAsset>> => {
-  const response = await fetch(`https://api.opensea.io/api/v1/assets?order_direction=desc&offset=0&limit=50`);
-  const data = await response.text();
-  const { assets } = JSON.parse(data);
+// const OPENSEAR_API_KEY = '1ac5acbf077b4c18bd39f470a8ffd114';
+
+const loadAssets = async (query: string): Promise<Array<IAsset>> => {
+  const response = await fetch(
+    `https://api.opensea.io/api/v1/assets?format=json&owner=${query}&order_direction=desc&offset=0&limit=10`
+  );
+  const data = await response.json();
+  const { assets } = data;
   return assets;
 };
 
 async function OpenSea(query: string): Promise<string> {
-  const q = query.toLowerCase().split(' ');
-  const assets = await loadAssets();
-
-  console.log(assets);
+  const assets = await loadAssets(query);
 
   const firstAsset =
     assets &&
     assets.find((asset) => {
       return (
         asset &&
-        (q.every((el) => (asset.name || '').toLowerCase().indexOf(el) > -1) ||
-          q.every((el) => (asset.description || '').toLowerCase().indexOf(el) > -1) ||
-          q.every((el) => asset.collection && (asset.collection.name || '').toLowerCase().indexOf(el) > -1) ||
-          q.every((el) => asset.collection && (asset.collection.description || '').toLowerCase().indexOf(el) > -1) ||
-          q.every((el) => asset.asset_contract && (asset.asset_contract.name || '').toLowerCase().indexOf(el) > -1))
+        ((asset.owner && asset.owner.address === query) ||
+          (asset.asset_contract && asset.asset_contract.address === query) ||
+          (asset.collection && asset.collection.payout_address === query) ||
+          (asset.creator && asset.creator.address === query))
       );
     });
 
-  // console.log(firstAsset);
+  console.log(firstAsset);
 
   if (!firstAsset) {
     return `<div className="d-flex justify-center items-center">
@@ -39,7 +39,7 @@ async function OpenSea(query: string): Promise<string> {
     </div>`;
   }
 
-  if (!assets || !assets.length || !q.every((el) => 'NFT'.toLowerCase().indexOf(el) > -1)) {
+  if (!assets || !assets.length) {
     return `<div className="d-flex justify-center items-center">
       <span>Sorry, no NFT’s found for "${query}"</span>
     </div>`;
@@ -47,7 +47,7 @@ async function OpenSea(query: string): Promise<string> {
 
   return `<div style="min-width: 90vw;" class="w-full flex flex-column flex-md-row flex-md-nowrap items-start bg-cultured">
     <div style="max-width: 900px; min-height: 450px; padding: 2rem 1rem;" class="flex bg-light-white justify-between items-start me-3">
-      <div style="width: 40%; padding: 1rem 0; overflow: hidden;" class="border flex justify-center items-start bg-white">
+      <div style="width: 40%; padding: 0 0; overflow: hidden;" class="border rounded flex justify-center items-start bg-white">
         <img width="400px" height="380px" src="${
           firstAsset ? firstAsset.image_url || firstAsset.image_thumbnail_url || firstAsset.image_preview_url : ''
         }" alt="${firstAsset ? firstAsset.name || 'N/A' : ''}" />
@@ -69,7 +69,11 @@ async function OpenSea(query: string): Promise<string> {
           Owned by &nbsp; <a class="text-bluetiful" href="${
             firstAsset ? firstAsset.external_link || firstAsset.permalink : ''
           }">${
-    firstAsset && firstAsset.owner && firstAsset.owner.user ? firstAsset.owner.user.username.replace('Null', '') : 'N/A'
+    firstAsset && firstAsset.owner && firstAsset.owner.user
+      ? firstAsset.owner.user.username
+        ? firstAsset.owner.user.username.replace('Null', '')
+        : ''
+      : 'N/A'
   }</a>
         </span>
         <div style="margin-top: 0.6rem;" class="h-full w-full">
@@ -118,9 +122,20 @@ async function OpenSea(query: string): Promise<string> {
 }
 
 async function trigger(query: string): Promise<boolean> {
-  const assets = await loadAssets();
-  const q = query.toLowerCase().split(' ');
-  if (assets && assets.length && q.every((el) => 'NFT'.toLowerCase().indexOf(el) > -1)) {
+  const assets = await loadAssets(query);
+  if (
+    assets &&
+    assets.length &&
+    assets.some((asset) => {
+      return (
+        asset &&
+        ((asset.owner && asset.owner.address === query) ||
+          (asset.asset_contract && asset.asset_contract.address === query) ||
+          (asset.collection && asset.collection.payout_address === query) ||
+          (asset.creator && asset.creator.address === query))
+      );
+    })
+  ) {
     return true;
   }
   return false;

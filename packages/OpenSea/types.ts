@@ -24,7 +24,7 @@ export interface ICollection {
   featured_image_url: string;
 }
 
-export interface IOwner {
+export interface IUser {
   user: { username: string };
   profile_img_url: string;
   address: string;
@@ -43,7 +43,8 @@ export interface ITrait {
 export interface IAsset {
   id: number;
   name: string;
-  owner: IOwner;
+  owner: IUser;
+  creator: IUser;
   token_id: string;
   image_url: string;
   last_sale: string;
