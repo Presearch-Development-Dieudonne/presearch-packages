@@ -2,9 +2,9 @@
   "name": "apod",
   "version": "1.0.0",
   "description": "Astronomy Picture of the Day",
-  "main": "index.js",
+  "main": "index.ts",
   "dependencies": {
-    "node-fetch": "^1.7.3"
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {},
   "scripts": {
